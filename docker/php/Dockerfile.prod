@@ -1,20 +1,28 @@
 FROM composer:latest AS composer
 WORKDIR /app
 COPY src/composer.json src/composer.lock ./
-RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress --no-scripts \
+    --ignore-platform-req=ext-gd --ignore-platform-req=ext-zip \
+    --ignore-platform-req=ext-bcmath --ignore-platform-req=ext-xml
 
 FROM node:22-alpine AS node
 WORKDIR /app
 COPY src/package.json src/pnpm-lock.yaml ./
 RUN corepack enable && pnpm install --frozen-lockfile
-COPY src/vite.config.js src/resources ./resources
+COPY --from=composer /app/vendor ./vendor
+COPY src/vite.config.js ./
+COPY src/public ./public
+COPY src/resources ./resources
 RUN pnpm run build
 
 FROM php:8.3-fpm-alpine
 
-RUN apk add --no-cache \
+RUN apk add --no-cache --virtual .build-deps \
+    oniguruma-dev libzip-dev libpng-dev libxml2-dev \
+    && apk add --no-cache \
     zip libzip libpng libxml2 oniguruma \
-    && docker-php-ext-install pdo_mysql mbstring zip gd bcmath xml opcache
+    && docker-php-ext-install -j$(nproc) pdo_mysql mbstring zip gd bcmath xml opcache \
+    && apk del .build-deps
 
 COPY --from=composer /app/vendor /var/www/vendor
 COPY --from=node /app/public/build /var/www/public/build

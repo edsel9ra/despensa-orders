@@ -1,0 +1,40 @@
+# Git
+.git
+.gitignore
+
+# Dependencies
+src/node_modules
+src/vendor
+
+# Build artifacts
+src/public/build
+
+# Environment
+.env
+.env.local
+.env.production
+
+# IDE
+.idea
+.vscode
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose*.yml
+Makefile
+AGENTS.md
+README.md
+skills-lock.json
+
+# Logs
+*.log
+
+# Temp
+storage/framework/cache
+storage/framework/sessions
+storage/framework/views
+storage/logs
