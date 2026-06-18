@@ -6,9 +6,6 @@
 src/node_modules
 src/vendor
 
-# Build artifacts
-src/public/build
-
 # Environment
 .env
 .env.local
