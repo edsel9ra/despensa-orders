@@ -11,8 +11,8 @@ COPY src/package.json src/pnpm-lock.yaml ./
 RUN corepack enable && pnpm install --frozen-lockfile
 COPY --from=composer /app/vendor ./vendor
 COPY src/vite.config.js ./
-COPY src/public ./public
 COPY src/resources ./resources
+RUN mkdir -p public
 RUN pnpm run build
 
 FROM php:8.3-fpm-alpine
