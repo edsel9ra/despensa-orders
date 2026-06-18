@@ -22,7 +22,7 @@ const pageKey = computed(() => page.component);
                 <Link href="/" class="inline-flex flex-col items-center gap-2 group">
                     <div class="relative">
                         <div class="absolute inset-0 rounded-full bg-brand-200/40 blur-md group-hover:blur-lg transition-all duration-300" />
-                        <ApplicationLogo class="relative h-16 w-16 fill-current text-brand-600 drop-shadow-sm" />
+                        <ApplicationLogo class="relative h-20 w-auto drop-shadow-sm" />
                     </div>
                     <span class="font-serif text-2xl font-normal text-stone-800 -mb-1">La Despensa</span>
                     <span class="text-xs font-medium text-stone-400 tracking-widest uppercase">Sistema de Pedidos</span>

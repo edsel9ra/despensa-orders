@@ -25,7 +25,7 @@ defineProps({
         <!-- Nav -->
         <nav class="relative z-10 flex items-center justify-between px-6 py-6 sm:px-12 lg:px-20">
             <div class="flex items-center gap-3">
-                <ApplicationLogo class="h-8 w-8 fill-current text-brand-400" />
+                <ApplicationLogo class="h-8 w-auto" />
                 <span class="font-serif text-xl text-white">La Despensa</span>
             </div>
             <div v-if="canLogin" class="flex items-center gap-4">

@@ -38,7 +38,7 @@ function isActive(name) {
             >
                 <div class="flex h-16 items-center justify-between border-b border-stone-100 px-4">
                     <Link :href="route('dashboard')" class="flex items-center gap-2.5" @click="showingSidebar = false">
-                        <ApplicationLogo class="h-8 w-auto fill-current text-brand-600" />
+                        <ApplicationLogo class="h-8 w-auto" />
                         <span class="text-sm font-bold text-stone-800 tracking-tight">La Despensa</span>
                     </Link>
                     <button @click="showingSidebar = false" class="rounded-lg p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-600">
@@ -70,7 +70,7 @@ function isActive(name) {
         <!-- Desktop sidebar -->
         <aside class="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-stone-200 bg-white shadow-sm lg:flex">
             <div class="flex h-16 items-center gap-2.5 border-b border-stone-100 px-6">
-                <ApplicationLogo class="h-8 w-auto fill-current text-brand-600" />
+                <ApplicationLogo class="h-8 w-auto" />
                 <span class="text-sm font-bold text-stone-800 tracking-tight">La Despensa</span>
             </div>
             <nav class="flex-1 space-y-0.5 p-3">
@@ -133,7 +133,7 @@ function isActive(name) {
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                 </button>
-                <ApplicationLogo class="h-7 w-auto fill-current text-brand-600" />
+                <ApplicationLogo class="h-7 w-auto" />
                 <span class="text-sm font-bold text-stone-800 tracking-tight">La Despensa</span>
                 <div class="flex-1" />
                 <div class="flex items-center gap-2">
