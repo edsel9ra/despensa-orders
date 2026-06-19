@@ -43,13 +43,13 @@ defineProps({
                     >
                         Iniciar Sesión
                     </Link>
-                    <Link
+                    <!-- <Link
                         v-if="canRegister"
                         :href="route('register')"
                         class="rounded-lg bg-brand-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-brand-900/30 transition-all hover:bg-brand-500 hover:shadow-xl hover:shadow-brand-800/30 active:scale-[0.97]"
                     >
                         Registrarse
-                    </Link>
+                    </Link> -->
                 </template>
             </div>
         </nav>
