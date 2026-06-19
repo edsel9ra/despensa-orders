@@ -5,6 +5,8 @@
 # Dependencies
 src/node_modules
 src/vendor
+src/public/hot
+public/hot
 
 # Environment
 .env
