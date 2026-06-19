@@ -38,14 +38,11 @@ COPY --from=node /app/public/build /var/www/public/build
 COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
 COPY docker/php/php.prod.ini /usr/local/etc/php/conf.d/php.prod.ini
 
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
-    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
-
 WORKDIR /var/www
 
 RUN rm -f /var/www/public/hot \
-    && php artisan package:discover --ansi \
-    && php artisan optimize:clear
+    && chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
+    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
 USER www-data
 CMD ["php-fpm"]
