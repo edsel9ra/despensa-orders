@@ -1,5 +1,7 @@
 # Dependencies
 node_modules/
+src/public/hot
+public/hot
 
 # Logs
 logs
