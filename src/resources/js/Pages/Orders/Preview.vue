@@ -8,6 +8,7 @@ const props = defineProps({
     remision: String,
     sede: String,
     fecha: String,
+    operationCenter: Object,
     items: Array,
 });
 
@@ -108,7 +109,7 @@ const confirmOrder = () => {
         <div class="space-y-5">
             <!-- Order info -->
             <div class="card p-5">
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-4">
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Remisión</p>
                         <p class="mt-1 text-sm font-medium text-gray-900">{{ remision }}</p>
@@ -121,7 +122,14 @@ const confirmOrder = () => {
                         <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Fecha</p>
                         <p class="mt-1 text-sm font-medium text-gray-900">{{ fecha }}</p>
                     </div>
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">C.O.</p>
+                        <p class="mt-1 text-sm font-medium text-gray-900">{{ operationCenter?.code ?? 'No aplica' }}</p>
+                    </div>
                 </div>
+                <p v-if="operationCenter?.applied" class="mt-4 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                    La sede se ajustó automáticamente a {{ operationCenter.sede }} según el C.O. {{ operationCenter.code }} del archivo.
+                </p>
             </div>
 
             <!-- Not found warning -->

@@ -6,12 +6,13 @@ use App\Models\Category;
 use App\Models\Item;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Services\SedeCatalog;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class ReportController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, SedeCatalog $sedes)
     {
         $validated = $request->validate([
             'fecha_inicio' => ['nullable', 'date'],
@@ -41,7 +42,7 @@ class ReportController extends Controller
 
         return Inertia::render('Reports/Index', [
             'filters' => $filters,
-            'sedes' => Order::query()->select('sede')->distinct()->orderBy('sede')->pluck('sede')->values(),
+            'sedes' => $sedes->names(),
             'categories' => Category::query()->orderBy('orden')->get(['id', 'nombre']),
             'items' => Item::query()
                 ->with('category:id,nombre')

@@ -8,33 +8,39 @@ use App\Models\Order;
 use App\Services\ExcelParser;
 use App\Services\OrderGenerator;
 use App\Services\PdfExporter;
+use App\Services\SedeCatalog;
 use App\Services\XlsxExporter;
 use Inertia\Inertia;
 
 class OrderController extends Controller
 {
-    public function create()
+    public function create(SedeCatalog $sedes)
     {
-        return Inertia::render('Orders/Create');
+        return Inertia::render('Orders/Create', [
+            'sedes' => $sedes->options(),
+        ]);
     }
 
-    public function preview(GenerateOrderRequest $request, ExcelParser $parser, OrderGenerator $generator)
+    public function preview(GenerateOrderRequest $request, ExcelParser $parser, OrderGenerator $generator, SedeCatalog $sedes)
     {
         $parsed = $parser->parse($request->file('archivo'));
+        $sedeResolution = $sedes->resolveForParsedItems($parsed, $request->sede);
         $orderData = $generator->generate($parsed);
 
         return Inertia::render('Orders/Preview', [
             'orderData' => $orderData,
             'remision' => $request->remision,
-            'sede' => $request->sede,
+            'sede' => $sedeResolution['sede'],
             'fecha' => $request->fecha,
+            'operationCenter' => $sedeResolution['operation_center'],
             'items' => Item::with('category')->orderBy('codigo_item')->get(),
         ]);
     }
 
-    public function store(GenerateOrderRequest $request, ExcelParser $parser, OrderGenerator $generator)
+    public function store(GenerateOrderRequest $request, ExcelParser $parser, OrderGenerator $generator, SedeCatalog $sedes)
     {
         $parsed = $parser->parse($request->file('archivo'));
+        $sedeResolution = $sedes->resolveForParsedItems($parsed, $request->sede);
 
         if ($request->filled('manual_items')) {
             foreach ($request->manual_items as $manual) {
@@ -47,6 +53,7 @@ class OrderController extends Controller
 
         $order = $generator->store($parsed, [
             ...$request->only(['remision', 'sede', 'fecha']),
+            'sede' => $sedeResolution['sede'],
             'user_id' => $request->user()->id,
         ]);
 

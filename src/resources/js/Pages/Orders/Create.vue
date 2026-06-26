@@ -11,6 +11,10 @@ const form = useForm({
 });
 const dragging = ref(false);
 
+defineProps({
+    sedes: { type: Array, required: true },
+});
+
 const submit = () => {
     form.post(route('orders.preview'), { preserveScroll: true });
 };
@@ -56,7 +60,7 @@ function onDrop(e) {
                                     <input type="file" accept=".xlsx,.xls" class="hidden" @input="form.archivo = $event.target.files[0]" />
                                 </label>
                             </p>
-                            <p class="mt-1 text-xs text-gray-400">Solo archivos XLSX</p>
+                            <p class="mt-1 text-xs text-gray-400">Archivos XLSX o XLS</p>
                         </div>
                         <div v-else class="flex items-center justify-center gap-3">
                             <svg class="h-8 w-8 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -81,7 +85,12 @@ function onDrop(e) {
                     </div>
                     <div>
                         <label class="label-field" for="sede">Sede</label>
-                        <input id="sede" v-model="form.sede" type="text" class="input-field" placeholder="Nombre de la sede" required />
+                        <select id="sede" v-model="form.sede" class="select-field" required>
+                            <option value="">Selecciona una sede</option>
+                            <option v-for="sede in sedes" :key="sede.name" :value="sede.name">
+                                {{ sede.name }}{{ sede.operation_center ? ` (C.O. ${sede.operation_center})` : '' }}
+                            </option>
+                        </select>
                         <p v-if="form.errors.sede" class="mt-1 text-sm text-red-600">{{ form.errors.sede }}</p>
                     </div>
                     <div>
