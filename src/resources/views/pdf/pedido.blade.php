@@ -34,6 +34,7 @@
                     <p style="margin: 2px 0;">Remisión: {{ $order->remision }}</p>
                     <p style="margin: 2px 0;">Sede: {{ $order->sede }}</p>
                     <p style="margin: 2px 0;">Fecha: {{ $order->fecha->format('d/m/Y') }}</p>
+                    <p style="margin: 2px 0;">Realizado por: {{ $order->user?->name ?? 'Sin registrar' }}</p>
                     <p style="margin: 2px 0;"><em>NOTA: LOS PRECIOS NO INCLUYEN IVA</em></p>
                 </td>
             </tr>

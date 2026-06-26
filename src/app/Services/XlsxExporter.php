@@ -1,12 +1,11 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\Order;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
-use PhpOffice\PhpSpreadsheet\Style\Font;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
@@ -14,7 +13,7 @@ class XlsxExporter
 {
     public function export(Order $order): BinaryFileResponse
     {
-        $order->load('orderItems.item.category');
+        $order->load('user', 'orderItems.item.category');
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
@@ -33,7 +32,7 @@ class XlsxExporter
 
         // Company header
         $sheet->setCellValue('C' . $row, 'MES GROUP S.A.S');
-        $sheet->setCellValue('C' . ($row+1), 'LA DESPENSA 2012');
+        $sheet->setCellValue('C' . ($row + 1), 'LA DESPENSA 2012');
         $sheet->setCellValue('E' . $row, 'FECHA');
         $sheet->setCellValue('F' . $row, $order->fecha->format('d/m/Y'));
         $row += 2;
@@ -42,6 +41,9 @@ class XlsxExporter
         $row++;
         $sheet->setCellValue('E' . $row, 'REMISION #');
         $sheet->setCellValue('F' . $row, $order->remision);
+        $row++;
+        $sheet->setCellValue('E' . $row, 'REALIZADO POR');
+        $sheet->setCellValue('F' . $row, $order->user?->name ?? 'Sin registrar');
         $row++;
         $sheet->setCellValue('A' . $row, 'NOTA: LOS PRECIOS NO INCLUYEN IVA');
         $row++;
@@ -59,7 +61,7 @@ class XlsxExporter
         $currentCategory = null;
         $globalRowStart = $row;
 
-        foreach ($order->orderItems->groupBy(fn($oi) => $oi->item->category->id) as $catId => $orderItems) {
+        foreach ($order->orderItems->groupBy(fn ($oi) => $oi->item->category->id) as $catId => $orderItems) {
             $category = $orderItems->first()->item->category;
 
             // Category header

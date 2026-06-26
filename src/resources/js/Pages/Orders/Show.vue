@@ -63,7 +63,7 @@ function formatDate(value) {
         <div class="space-y-5">
             <!-- Order info -->
             <div class="card p-5">
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-4">
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Remisión</p>
                         <p class="mt-1 text-base font-medium text-gray-900">#{{ order.remision }}</p>
@@ -75,6 +75,10 @@ function formatDate(value) {
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Fecha</p>
                         <p class="mt-1 text-base font-medium text-gray-900">{{ formatDate(order.fecha) }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Realizado por</p>
+                        <p class="mt-1 text-base font-medium text-gray-900">{{ order.user?.name ?? 'Sin registrar' }}</p>
                     </div>
                 </div>
             </div>

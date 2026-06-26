@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\Order;
@@ -8,11 +9,11 @@ class PdfExporter
 {
     public function export(Order $order)
     {
-        $order->load('orderItems.item.category');
+        $order->load('user', 'orderItems.item.category');
 
         $pdf = Pdf::loadView('pdf.pedido', [
             'order' => $order,
-            'grouped' => $order->orderItems->groupBy(fn($oi) => $oi->item->category->id),
+            'grouped' => $order->orderItems->groupBy(fn ($oi) => $oi->item->category->id),
         ]);
 
         $pdf->setPaper('letter', 'landscape');
