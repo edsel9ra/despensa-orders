@@ -130,6 +130,9 @@ const confirmOrder = () => {
                 <p v-if="operationCenter?.applied" class="mt-4 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
                     La sede se ajustó automáticamente a {{ operationCenter.sede }} según el C.O. {{ operationCenter.code }} del archivo.
                 </p>
+                <p v-else-if="operationCenter?.filtered" class="mt-4 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+                    El archivo contiene varios C.O.; se usarán {{ operationCenter.filtered_items_count }} de {{ operationCenter.original_items_count }} ítems del C.O. {{ operationCenter.code }} para la sede {{ operationCenter.sede }}.
+                </p>
             </div>
 
             <!-- Not found warning -->

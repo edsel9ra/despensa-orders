@@ -25,6 +25,7 @@ class OrderController extends Controller
     {
         $parsed = $parser->parse($request->file('archivo'));
         $sedeResolution = $sedes->resolveForParsedItems($parsed, $request->sede);
+        $parsed = $sedeResolution['parsed_items'];
         $orderData = $generator->generate($parsed);
 
         return Inertia::render('Orders/Preview', [
@@ -41,6 +42,7 @@ class OrderController extends Controller
     {
         $parsed = $parser->parse($request->file('archivo'));
         $sedeResolution = $sedes->resolveForParsedItems($parsed, $request->sede);
+        $parsed = $sedeResolution['parsed_items'];
 
         if ($request->filled('manual_items')) {
             foreach ($request->manual_items as $manual) {

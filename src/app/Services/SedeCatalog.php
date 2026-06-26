@@ -53,13 +53,14 @@ class SedeCatalog
             return [
                 'sede' => $selectedSede,
                 'operation_center' => null,
+                'parsed_items' => $parsedItems,
             ];
         }
 
+        $selectedCode = $this->operationCenterForSede($selectedSede);
+
         if ($operationCenters->count() > 1) {
-            throw ValidationException::withMessages([
-                'archivo' => 'El archivo contiene varios C.O. No se puede crear un único pedido para varias sedes.',
-            ]);
+            return $this->resolveMultipleOperationCenters($parsedItems, $selectedSede, $selectedCode);
         }
 
         $code = $operationCenters->first();
@@ -77,7 +78,36 @@ class SedeCatalog
                 'code' => $code,
                 'sede' => $sede,
                 'applied' => $this->normalizeSede($sede) !== $this->normalizeSede($selectedSede),
+                'filtered' => false,
             ],
+            'parsed_items' => $parsedItems,
+        ];
+    }
+
+    private function resolveMultipleOperationCenters(Collection $parsedItems, string $selectedSede, string $selectedCode): array
+    {
+        $sede = self::OPERATION_CENTERS[$selectedCode];
+        $filteredItems = $parsedItems
+            ->filter(fn (array $item) => $this->normalizeOperationCenter($item['co'] ?? '') === $selectedCode)
+            ->values();
+
+        if ($filteredItems->isEmpty()) {
+            throw ValidationException::withMessages([
+                'archivo' => "El archivo no contiene ítems para la sede seleccionada {$sede} (C.O. {$selectedCode}).",
+            ]);
+        }
+
+        return [
+            'sede' => $sede,
+            'operation_center' => [
+                'code' => $selectedCode,
+                'sede' => $sede,
+                'applied' => $this->normalizeSede($sede) !== $this->normalizeSede($selectedSede),
+                'filtered' => true,
+                'original_items_count' => $parsedItems->count(),
+                'filtered_items_count' => $filteredItems->count(),
+            ],
+            'parsed_items' => $filteredItems,
         ];
     }
 
@@ -92,8 +122,20 @@ class SedeCatalog
 
     private function hasOperationCenter(string $sede): bool
     {
-        return collect(self::OPERATION_CENTERS)
-            ->contains(fn (string $mappedSede) => $this->normalizeSede($mappedSede) === $this->normalizeSede($sede));
+        return $this->operationCenterForSede($sede) !== null;
+    }
+
+    private function operationCenterForSede(string $sede): ?string
+    {
+        $normalizedSede = $this->normalizeSede($sede);
+
+        foreach (self::OPERATION_CENTERS as $code => $mappedSede) {
+            if ($this->normalizeSede($mappedSede) === $normalizedSede) {
+                return $code;
+            }
+        }
+
+        return null;
     }
 
     private function normalizeSede(string $sede): string
