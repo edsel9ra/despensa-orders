@@ -1,6 +1,8 @@
 <?php
+
 namespace App\Services;
 
+use App\Models\Category;
 use App\Models\Item;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -19,7 +21,9 @@ class OrderGenerator
 
         foreach ($parsedItems as $parsed) {
             $item = $items->get($parsed['codigo_item']);
-            if (!$item) continue;
+            if (! $item) {
+                continue;
+            }
 
             $total = $parsed['cantidad'] * $item->precio_presentacion;
             $catId = $item->category->id;
@@ -47,7 +51,7 @@ class OrderGenerator
         }
 
         // Sort by category order (fetch from DB)
-        $categories = \App\Models\Category::orderBy('orden')->pluck('id')->toArray();
+        $categories = Category::orderBy('orden')->pluck('id')->toArray();
         $sorted = [];
         foreach ($categories as $catId) {
             if (isset($grouped[$catId])) {
@@ -56,7 +60,7 @@ class OrderGenerator
         }
 
         $subtotalGeneral = collect($sorted)->sum('subtotal');
-        $ivaCategories = \App\Models\Category::where('aplica_iva', true)->pluck('id');
+        $ivaCategories = Category::where('aplica_iva', true)->pluck('id');
         $baseIva = 0;
         foreach ($grouped as $catId => $group) {
             if ($ivaCategories->contains($catId)) {
@@ -81,6 +85,7 @@ class OrderGenerator
 
         return DB::transaction(function () use ($data, $meta) {
             $order = Order::create([
+                'user_id' => $meta['user_id'] ?? null,
                 'remision' => $meta['remision'],
                 'sede' => $meta['sede'],
                 'fecha' => $meta['fecha'],
@@ -89,12 +94,15 @@ class OrderGenerator
                 'total' => $data['total'],
             ]);
 
-            $items = \App\Models\Item::whereIn('codigo_item', collect($data['grouped'])->pluck('items')->flatten(1)->pluck('codigo_item'))->get()->keyBy('codigo_item');
+            $items = Item::whereIn('codigo_item', collect($data['grouped'])->pluck('items')->flatten(1)->pluck('codigo_item'))->get()->keyBy('codigo_item');
 
             foreach ($data['grouped'] as $group) {
                 foreach ($group['items'] as $itemData) {
                     $item = $items->get($itemData['codigo_item']);
-                    if (!$item) continue;
+                    if (! $item) {
+                        continue;
+                    }
+
                     OrderItem::create([
                         'order_id' => $order->id,
                         'item_id' => $item->id,

@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
 {
-    protected $fillable = ['remision', 'sede', 'fecha', 'subtotal', 'iva', 'total'];
+    protected $fillable = ['user_id', 'remision', 'sede', 'fecha', 'subtotal', 'iva', 'total'];
 
     protected function casts(): array
     {
@@ -15,7 +17,12 @@ class Order extends Model
         ];
     }
 
-    public function orderItems()
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);
     }

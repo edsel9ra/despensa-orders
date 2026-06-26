@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Http\Requests\GenerateOrderRequest;
@@ -6,8 +7,8 @@ use App\Models\Item;
 use App\Models\Order;
 use App\Services\ExcelParser;
 use App\Services\OrderGenerator;
-use App\Services\XlsxExporter;
 use App\Services\PdfExporter;
+use App\Services\XlsxExporter;
 use Inertia\Inertia;
 
 class OrderController extends Controller
@@ -44,7 +45,10 @@ class OrderController extends Controller
             }
         }
 
-        $order = $generator->store($parsed, $request->only(['remision', 'sede', 'fecha']));
+        $order = $generator->store($parsed, [
+            ...$request->only(['remision', 'sede', 'fecha']),
+            'user_id' => $request->user()->id,
+        ]);
 
         return redirect()->route('orders.show', $order)->with('success', 'Pedido creado exitosamente.');
     }
@@ -52,6 +56,7 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         $order->load('orderItems.item.category');
+
         return Inertia::render('Orders/Show', ['order' => $order]);
     }
 

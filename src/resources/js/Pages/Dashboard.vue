@@ -97,6 +97,7 @@ function formatPrice(value) {
                             <tr class="bg-stone-50/50">
                                 <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500">Remisión</th>
                                 <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500">Sede</th>
+                                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500">Realizado por</th>
                                 <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500">Fecha</th>
                                 <th class="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider text-stone-500">Items</th>
                                 <th class="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider text-stone-500">Total</th>
@@ -107,6 +108,7 @@ function formatPrice(value) {
                             <tr v-for="order in stats.recent_orders" :key="order.id" class="hover:bg-stone-50 transition-colors">
                                 <td class="whitespace-nowrap px-5 py-4 text-sm font-medium text-stone-900">#{{ order.remision }}</td>
                                 <td class="whitespace-nowrap px-5 py-4 text-sm text-stone-600">{{ order.sede }}</td>
+                                <td class="whitespace-nowrap px-5 py-4 text-sm text-stone-600">{{ order.user_name }}</td>
                                 <td class="whitespace-nowrap px-5 py-4 text-sm text-stone-600">{{ order.fecha }}</td>
                                 <td class="whitespace-nowrap px-5 py-4 text-right text-sm text-stone-600">{{ order.items_count }}</td>
                                 <td class="whitespace-nowrap px-5 py-4 text-right text-sm font-semibold text-stone-900">{{ formatPrice(order.total) }}</td>
