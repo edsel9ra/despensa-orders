@@ -17,21 +17,27 @@ class SedeCatalog
         '011' => 'BOCHALEMA PLAZA',
     ];
 
+    private const SEDES_SIN_CO = [
+        'CHIPICHAPE',
+        'FLORA',
+        'GRANADA',
+        'LIMONAR',
+        'LLANOGRANDE',
+        'SAN FERNANDO',
+    ];
+
     public function options(): array
     {
-        $configured = collect(self::OPERATION_CENTERS)
+        $withOperationCenter = collect(self::OPERATION_CENTERS)
             ->map(fn (string $sede, string $code) => $this->formatOption($sede, $code));
-
-        $existing = Order::query()
-            ->select('sede')
-            ->distinct()
-            ->orderBy('sede')
-            ->pluck('sede')
-            ->filter()
-            ->reject(fn (string $sede) => $this->hasOperationCenter($sede))
+        
+        $withoutOperationCenter = collect(self::SEDES_SIN_CO)
             ->map(fn (string $sede) => $this->formatOption($sede));
 
-        return $configured->concat($existing)->values()->all();
+        return $withOperationCenter
+            ->concat($withoutOperationCenter)
+            ->values()
+            ->all();
     }
 
     public function names(): array
