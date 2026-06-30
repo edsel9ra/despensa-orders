@@ -12,6 +12,14 @@ class CatalogAccessTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_user_with_id_three_can_access_dashboard_and_new_order(): void
+    {
+        $user = User::factory()->create(['id' => 3]);
+
+        $this->actingAs($user)->get(route('dashboard'))->assertOk();
+        $this->actingAs($user)->get(route('orders.create'))->assertOk();
+    }
+
     public function test_user_with_id_three_cannot_access_or_modify_categories(): void
     {
         $user = User::factory()->create(['id' => 3]);
@@ -70,11 +78,29 @@ class CatalogAccessTest extends TestCase
         $this->actingAs($user)->post(route('items.import'))->assertForbidden();
     }
 
-    public function test_other_users_can_access_categories_and_items(): void
+    public function test_user_with_id_three_cannot_access_reports(): void
+    {
+        $user = User::factory()->create(['id' => 3]);
+
+        $this->actingAs($user)->get(route('reports.index'))->assertForbidden();
+        $this->actingAs($user)->get(route('reports.export-xlsx', [
+            'fecha_inicio' => '2026-06-01',
+            'fecha_fin' => '2026-06-30',
+            'sede' => 'Norte',
+        ]))->assertForbidden();
+        $this->actingAs($user)->get(route('reports.export-pdf', [
+            'fecha_inicio' => '2026-06-01',
+            'fecha_fin' => '2026-06-30',
+            'sede' => 'Norte',
+        ]))->assertForbidden();
+    }
+
+    public function test_other_users_can_access_categories_items_and_reports(): void
     {
         $user = User::factory()->create(['id' => 4]);
 
         $this->actingAs($user)->get(route('categories.index'))->assertOk();
         $this->actingAs($user)->get(route('items.index'))->assertOk();
+        $this->actingAs($user)->get(route('reports.index'))->assertOk();
     }
 }

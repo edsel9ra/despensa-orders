@@ -1,6 +1,7 @@
 <script setup>
+import { computed } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 
 defineProps({
     stats: {
@@ -8,6 +9,9 @@ defineProps({
         required: true,
     },
 });
+
+const page = usePage();
+const canAccessCatalog = computed(() => page.props.auth.user?.id !== 3);
 
 function formatPrice(value) {
     return Number(value).toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 });
@@ -45,7 +49,7 @@ function formatPrice(value) {
                             <p class="text-2xl font-bold text-stone-900">{{ stats.categories_count }}</p>
                         </div>
                     </div>
-                    <div class="mt-4">
+                    <div v-if="canAccessCatalog" class="mt-4">
                         <Link :href="route('categories.index')" class="text-sm font-medium text-brand-600 hover:text-brand-800 transition-colors">
                             Ver todas →
                         </Link>
@@ -64,7 +68,7 @@ function formatPrice(value) {
                             <p class="text-2xl font-bold text-stone-900">{{ stats.items_count }}</p>
                         </div>
                     </div>
-                    <div class="mt-4">
+                    <div v-if="canAccessCatalog" class="mt-4">
                         <Link :href="route('items.index')" class="text-sm font-medium text-brand-600 hover:text-brand-800 transition-colors">
                             Ver todos →
                         </Link>

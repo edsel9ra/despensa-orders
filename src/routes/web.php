@@ -50,11 +50,11 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
-    Route::get('reports/xlsx', [ReportController::class, 'exportXlsx'])->name('reports.export-xlsx');
-    Route::get('reports/pdf', [ReportController::class, 'exportPdf'])->name('reports.export-pdf');
+    Route::middleware('restricted.access')->group(function () {
+        Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('reports/xlsx', [ReportController::class, 'exportXlsx'])->name('reports.export-xlsx');
+        Route::get('reports/pdf', [ReportController::class, 'exportPdf'])->name('reports.export-pdf');
 
-    Route::middleware('catalog.access')->group(function () {
         Route::resource('categories', CategoryController::class);
 
         Route::get('items/import', [ItemController::class, 'importForm'])->name('items.import.form');

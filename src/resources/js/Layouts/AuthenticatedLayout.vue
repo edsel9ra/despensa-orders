@@ -18,7 +18,7 @@ const navItems = [
 const visibleNavItems = computed(() => {
     if (page.props.auth.user?.id !== 3) return navItems;
 
-    return navItems.filter(item => !['categories.index', 'items.index'].includes(item.route));
+    return navItems.filter(item => !['categories.index', 'items.index', 'reports.index'].includes(item.route));
 });
 
 const pageKey = computed(() => page.component);
