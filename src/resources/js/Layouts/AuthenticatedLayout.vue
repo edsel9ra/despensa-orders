@@ -15,6 +15,12 @@ const navItems = [
     { name: 'Reportes', route: 'reports.index', icon: 'M11 3.055A9.001 9.001 0 1020.945 13H11V3.055zM20.488 9H15V3.512A9.025 9.025 0 0120.488 9z' },
 ];
 
+const visibleNavItems = computed(() => {
+    if (page.props.auth.user?.id !== 3) return navItems;
+
+    return navItems.filter(item => !['categories.index', 'items.index'].includes(item.route));
+});
+
 const pageKey = computed(() => page.component);
 
 function isActive(name) {
@@ -50,7 +56,7 @@ function isActive(name) {
                 </div>
                 <nav class="flex-1 space-y-0.5 p-3">
                     <Link
-                        v-for="item in navItems"
+                        v-for="item in visibleNavItems"
                         :key="item.name"
                         :href="route(item.route)"
                         @click="showingSidebar = false"
@@ -76,7 +82,7 @@ function isActive(name) {
             </div>
             <nav class="flex-1 space-y-0.5 p-3">
                 <Link
-                    v-for="item in navItems"
+                    v-for="item in visibleNavItems"
                     :key="item.name"
                     :href="route(item.route)"
                     class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150"

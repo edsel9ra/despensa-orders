@@ -1,0 +1,19 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+class DenyCatalogAccessForUserThree
+{
+    public function handle(Request $request, Closure $next): Response
+    {
+        if ($request->user()?->id === 3) {
+            abort(403);
+        }
+
+        return $next($request);
+    }
+}

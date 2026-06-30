@@ -54,11 +54,13 @@ Route::middleware('auth')->group(function () {
     Route::get('reports/xlsx', [ReportController::class, 'exportXlsx'])->name('reports.export-xlsx');
     Route::get('reports/pdf', [ReportController::class, 'exportPdf'])->name('reports.export-pdf');
 
-    Route::resource('categories', CategoryController::class);
+    Route::middleware('catalog.access')->group(function () {
+        Route::resource('categories', CategoryController::class);
 
-    Route::get('items/import', [ItemController::class, 'importForm'])->name('items.import.form');
-    Route::post('items/import', [ItemController::class, 'import'])->name('items.import');
-    Route::resource('items', ItemController::class);
+        Route::get('items/import', [ItemController::class, 'importForm'])->name('items.import.form');
+        Route::post('items/import', [ItemController::class, 'import'])->name('items.import');
+        Route::resource('items', ItemController::class);
+    });
 
     Route::get('orders/create', [OrderController::class, 'create'])->name('orders.create');
     Route::post('orders/preview', [OrderController::class, 'preview'])->name('orders.preview');
