@@ -48,6 +48,27 @@ const filterDescription = computed(() => {
     return category ? `Grupo: ${category.nombre}` : 'Todos los productos de la sede';
 });
 
+const exportParams = computed(() => {
+    const params = {
+        fecha_inicio: props.filters.fecha_inicio,
+        fecha_fin: props.filters.fecha_fin,
+        sede: props.filters.sede,
+    };
+
+    if (props.filters.category_id) {
+        params.category_id = props.filters.category_id;
+    }
+
+    if (props.filters.item_ids?.length) {
+        params.item_ids = props.filters.item_ids;
+    }
+
+    return params;
+});
+
+const xlsxExportUrl = computed(() => route('reports.export-xlsx', exportParams.value));
+const pdfExportUrl = computed(() => route('reports.export-pdf', exportParams.value));
+
 function submit() {
     form.get(route('reports.index'), { preserveScroll: true, preserveState: true, replace: true });
 }
@@ -172,6 +193,27 @@ function formatNumber(value) {
             </form>
 
             <div v-if="report" class="space-y-6">
+                <div class="card flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm font-semibold text-stone-900">Descargar reporte</p>
+                        <p class="mt-1 text-sm text-stone-500">Los archivos usan los filtros aplicados en el calculo actual.</p>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <a :href="xlsxExportUrl" class="btn-success btn-sm">
+                            <svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Descargar XLSX
+                        </a>
+                        <a :href="pdfExportUrl" class="btn-danger btn-sm">
+                            <svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                            Descargar PDF
+                        </a>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
                     <div class="card p-5">
                         <p class="text-sm font-medium text-stone-500">Pedidos incluidos</p>

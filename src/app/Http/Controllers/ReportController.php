@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Item;
-use App\Models\Order;
 use App\Models\OrderItem;
+use App\Services\ReportPdfExporter;
+use App\Services\ReportXlsxExporter;
 use App\Services\SedeCatalog;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -14,29 +15,7 @@ class ReportController extends Controller
 {
     public function index(Request $request, SedeCatalog $sedes)
     {
-        $validated = $request->validate([
-            'fecha_inicio' => ['nullable', 'date'],
-            'fecha_fin' => ['nullable', 'date', 'after_or_equal:fecha_inicio'],
-            'sede' => ['nullable', 'string', 'max:100'],
-            'category_id' => ['nullable', 'integer', 'exists:categories,id'],
-            'item_ids' => ['nullable', 'array'],
-            'item_ids.*' => ['integer', 'exists:items,id'],
-        ]);
-
-        $itemIds = collect($validated['item_ids'] ?? [])
-            ->filter()
-            ->map(fn ($id) => (int) $id)
-            ->unique()
-            ->values()
-            ->all();
-
-        $filters = [
-            'fecha_inicio' => $validated['fecha_inicio'] ?? '',
-            'fecha_fin' => $validated['fecha_fin'] ?? '',
-            'sede' => $validated['sede'] ?? '',
-            'category_id' => $validated['category_id'] ?? '',
-            'item_ids' => $itemIds,
-        ];
+        $filters = $this->validatedFilters($request);
 
         $hasRequiredFilters = $filters['fecha_inicio'] && $filters['fecha_fin'] && $filters['sede'];
 
@@ -50,6 +29,81 @@ class ReportController extends Controller
                 ->get(['id', 'codigo_item', 'descripcion', 'categoria_id']),
             'report' => $hasRequiredFilters ? $this->buildOrdersReport($filters) : null,
         ]);
+    }
+
+    public function exportXlsx(Request $request, ReportXlsxExporter $exporter)
+    {
+        $filters = $this->validatedFilters($request, requireBaseFilters: true);
+
+        return $exporter->export(
+            $this->buildOrdersReport($filters),
+            $filters,
+            $this->filterLabels($filters),
+        );
+    }
+
+    public function exportPdf(Request $request, ReportPdfExporter $exporter)
+    {
+        $filters = $this->validatedFilters($request, requireBaseFilters: true);
+
+        return $exporter->export(
+            $this->buildOrdersReport($filters),
+            $filters,
+            $this->filterLabels($filters),
+        );
+    }
+
+    private function validatedFilters(Request $request, bool $requireBaseFilters = false): array
+    {
+        $required = $requireBaseFilters ? 'required' : 'nullable';
+
+        $validated = $request->validate([
+            'fecha_inicio' => [$required, 'date'],
+            'fecha_fin' => [$required, 'date', 'after_or_equal:fecha_inicio'],
+            'sede' => [$required, 'string', 'max:100'],
+            'category_id' => ['nullable', 'integer', 'exists:categories,id'],
+            'item_ids' => ['nullable', 'array'],
+            'item_ids.*' => ['integer', 'exists:items,id'],
+        ]);
+
+        $itemIds = collect($validated['item_ids'] ?? [])
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+
+        return [
+            'fecha_inicio' => $validated['fecha_inicio'] ?? '',
+            'fecha_fin' => $validated['fecha_fin'] ?? '',
+            'sede' => $validated['sede'] ?? '',
+            'category_id' => $validated['category_id'] ?? '',
+            'item_ids' => $itemIds,
+        ];
+    }
+
+    private function filterLabels(array $filters): array
+    {
+        $categoryName = $filters['category_id']
+            ? Category::query()->whereKey($filters['category_id'])->value('nombre')
+            : 'Todos los grupos';
+
+        $itemNames = $filters['item_ids']
+            ? Item::query()
+                ->whereKey($filters['item_ids'])
+                ->orderBy('codigo_item')
+                ->get(['codigo_item', 'descripcion'])
+                ->map(fn (Item $item) => $item->codigo_item.' - '.$item->descripcion)
+                ->all()
+            : [];
+
+        return [
+            'fecha_inicio' => $filters['fecha_inicio'],
+            'fecha_fin' => $filters['fecha_fin'],
+            'sede' => $filters['sede'],
+            'category_name' => $categoryName ?: 'Todos los grupos',
+            'items_summary' => $itemNames ? implode(', ', $itemNames) : 'Todos los productos',
+        ];
     }
 
     private function buildOrdersReport(array $filters): array

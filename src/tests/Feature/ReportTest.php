@@ -64,9 +64,9 @@ class ReportTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Reports/Index')
                 ->where('report.summary.orders_count', 2)
-                ->where('report.summary.subtotal', 350.0)
-                ->where('report.summary.iva', 57.0)
-                ->where('report.summary.total', 407.0)
+                ->where('report.summary.subtotal', 350)
+                ->where('report.summary.iva', 57)
+                ->where('report.summary.total', 407)
             );
     }
 
@@ -99,9 +99,9 @@ class ReportTest extends TestCase
                 ->component('Reports/Index')
                 ->where('report.summary.orders_count', 1)
                 ->where('report.summary.items_count', 1)
-                ->where('report.summary.subtotal', 50.0)
-                ->where('report.summary.iva', 0.0)
-                ->where('report.summary.total', 50.0)
+                ->where('report.summary.subtotal', 50)
+                ->where('report.summary.iva', 0)
+                ->where('report.summary.total', 50)
             );
     }
 
@@ -134,10 +134,64 @@ class ReportTest extends TestCase
                 ->component('Reports/Index')
                 ->where('report.summary.orders_count', 1)
                 ->where('report.summary.items_count', 1)
-                ->where('report.summary.subtotal', 100.0)
-                ->where('report.summary.iva', 19.0)
-                ->where('report.summary.total', 119.0)
+                ->where('report.summary.subtotal', 100)
+                ->where('report.summary.iva', 19)
+                ->where('report.summary.total', 119)
             );
+    }
+
+    public function test_orders_report_can_be_exported_as_xlsx(): void
+    {
+        $user = User::factory()->create();
+        [$itemWithIva] = $this->createItems();
+
+        $order = Order::create([
+            'user_id' => $user->id,
+            'remision' => 'R-006',
+            'sede' => 'Norte',
+            'fecha' => '2026-06-10',
+            'subtotal' => 100,
+            'iva' => 19,
+            'total' => 119,
+        ]);
+        OrderItem::create(['order_id' => $order->id, 'item_id' => $itemWithIva->id, 'cantidad' => 1, 'precio_unitario' => 100, 'precio_presentacion' => 100, 'total' => 100]);
+
+        $this->actingAs($user)
+            ->get(route('reports.export-xlsx', [
+                'fecha_inicio' => '2026-06-01',
+                'fecha_fin' => '2026-06-30',
+                'sede' => 'Norte',
+                'category_id' => $itemWithIva->categoria_id,
+                'item_ids' => [$itemWithIva->id],
+            ]))
+            ->assertOk()
+            ->assertDownload('REPORTE_PEDIDOS_Norte_20260601_20260630.xlsx');
+    }
+
+    public function test_orders_report_can_be_exported_as_pdf(): void
+    {
+        $user = User::factory()->create();
+        [$itemWithIva] = $this->createItems();
+
+        $order = Order::create([
+            'user_id' => $user->id,
+            'remision' => 'R-007',
+            'sede' => 'Norte',
+            'fecha' => '2026-06-10',
+            'subtotal' => 100,
+            'iva' => 19,
+            'total' => 119,
+        ]);
+        OrderItem::create(['order_id' => $order->id, 'item_id' => $itemWithIva->id, 'cantidad' => 1, 'precio_unitario' => 100, 'precio_presentacion' => 100, 'total' => 100]);
+
+        $this->actingAs($user)
+            ->get(route('reports.export-pdf', [
+                'fecha_inicio' => '2026-06-01',
+                'fecha_fin' => '2026-06-30',
+                'sede' => 'Norte',
+            ]))
+            ->assertOk()
+            ->assertDownload('REPORTE_PEDIDOS_Norte_20260601_20260630.pdf');
     }
 
     private function createItems(): array

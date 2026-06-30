@@ -51,6 +51,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('reports/xlsx', [ReportController::class, 'exportXlsx'])->name('reports.export-xlsx');
+    Route::get('reports/pdf', [ReportController::class, 'exportPdf'])->name('reports.export-pdf');
 
     Route::resource('categories', CategoryController::class);
 
