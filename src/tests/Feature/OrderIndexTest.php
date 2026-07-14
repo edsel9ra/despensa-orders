@@ -45,6 +45,39 @@ class OrderIndexTest extends TestCase
             );
     }
 
+    public function test_order_pagination_uses_forwarded_https_scheme(): void
+    {
+        $user = User::factory()->create();
+
+        for ($i = 1; $i <= 16; $i++) {
+            Order::create([
+                'user_id' => $user->id,
+                'remision' => 'R-'.str_pad((string) $i, 3, '0', STR_PAD_LEFT),
+                'sede' => 'Norte',
+                'fecha' => '2026-06-10',
+                'subtotal' => 100,
+                'iva' => 19,
+                'total' => 119,
+            ]);
+        }
+
+        $this->actingAs($user)
+            ->withServerVariables([
+                'HTTP_HOST' => 'pedidos-despensa.misterwings.com',
+                'REMOTE_ADDR' => '10.0.0.10',
+                'SERVER_PORT' => '80',
+                'HTTP_X_FORWARDED_HOST' => 'pedidos-despensa.misterwings.com',
+                'HTTP_X_FORWARDED_PORT' => '443',
+                'HTTP_X_FORWARDED_PROTO' => 'https',
+            ])
+            ->get('/orders')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Orders/Index')
+                ->where('orders.links.2.url', 'https://pedidos-despensa.misterwings.com/orders?page=2')
+            );
+    }
+
     public function test_user_with_id_three_can_view_orders_without_delete_permission(): void
     {
         $user = User::factory()->create(['id' => 3]);
