@@ -35,7 +35,9 @@ function show(opts = {}) {
 function confirm() {
     loading.value = true;
     if (actionUrl.value) {
-        router[method.value](actionUrl.value, data.value, {
+        router.visit(actionUrl.value, {
+            method: method.value,
+            data: data.value,
             onFinish: () => {
                 open.value = false;
                 if (resolving.value) resolving.value(true);
