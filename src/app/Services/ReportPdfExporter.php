@@ -21,7 +21,9 @@ class ReportPdfExporter
 
     private function filename(array $filters): string
     {
-        $sede = preg_replace('/[^A-Za-z0-9_-]+/', '_', $filters['sede']);
+        $sede = $filters['sede']
+            ? preg_replace('/[^A-Za-z0-9_-]+/', '_', $filters['sede'])
+            : 'TODAS_SEDES';
 
         return 'REPORTE_PEDIDOS_'.$sede.'_'.str_replace('-', '', $filters['fecha_inicio']).'_'.str_replace('-', '', $filters['fecha_fin']);
     }

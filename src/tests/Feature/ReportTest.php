@@ -70,6 +70,60 @@ class ReportTest extends TestCase
             );
     }
 
+    public function test_orders_report_can_be_generated_without_sede_filter(): void
+    {
+        $user = User::factory()->create();
+        [$itemWithIva] = $this->createItems();
+
+        $firstOrder = Order::create([
+            'user_id' => $user->id,
+            'remision' => 'R-101',
+            'sede' => 'Norte',
+            'fecha' => '2026-06-10',
+            'subtotal' => 100,
+            'iva' => 19,
+            'total' => 119,
+        ]);
+        OrderItem::create(['order_id' => $firstOrder->id, 'item_id' => $itemWithIva->id, 'cantidad' => 1, 'precio_unitario' => 100, 'precio_presentacion' => 100, 'total' => 100]);
+
+        $secondOrder = Order::create([
+            'user_id' => $user->id,
+            'remision' => 'R-102',
+            'sede' => 'Sur',
+            'fecha' => '2026-06-20',
+            'subtotal' => 200,
+            'iva' => 38,
+            'total' => 238,
+        ]);
+        OrderItem::create(['order_id' => $secondOrder->id, 'item_id' => $itemWithIva->id, 'cantidad' => 2, 'precio_unitario' => 100, 'precio_presentacion' => 100, 'total' => 200]);
+
+        $this->actingAs($user)
+            ->get(route('reports.index', [
+                'fecha_inicio' => '2026-06-01',
+                'fecha_fin' => '2026-06-30',
+            ]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Reports/Index')
+                ->where('filters.sede', '')
+                ->where('report.summary.orders_count', 2)
+                ->where('report.summary.subtotal', 300)
+                ->where('report.summary.iva', 57)
+                ->where('report.summary.total', 357)
+            );
+    }
+
+    public function test_orders_report_requires_dates_when_filters_are_submitted(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->from(route('reports.index'))
+            ->get(route('reports.index', ['sede' => 'Norte']))
+            ->assertRedirect(route('reports.index'))
+            ->assertSessionHasErrors(['fecha_inicio', 'fecha_fin']);
+    }
+
     public function test_orders_report_can_be_filtered_by_specific_items(): void
     {
         $user = User::factory()->create();

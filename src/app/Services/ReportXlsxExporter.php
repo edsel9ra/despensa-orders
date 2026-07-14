@@ -101,7 +101,7 @@ class ReportXlsxExporter
         $sheet->getStyle('A'.$row)->getFont()->setBold(true)->setSize(13);
         $row++;
 
-        $headers = ['Remision', 'Fecha', 'Realizado por', 'Productos', 'Cantidad', 'Subtotal', 'IVA', 'Total'];
+        $headers = ['Sede', 'Fecha', 'Realizado por', 'Productos', 'Cantidad', 'Subtotal', 'IVA', 'Total'];
         $headerRow = $row;
         $sheet->fromArray($headers, null, 'A'.$row);
         $this->styleTableHeader($sheet, $headerRow, 'H');
@@ -109,7 +109,7 @@ class ReportXlsxExporter
 
         foreach ($orders as $order) {
             $sheet->fromArray([
-                $order['remision'],
+                $order['sede'],
                 $order['fecha'],
                 $order['user_name'],
                 $order['items_count'],
@@ -184,7 +184,9 @@ class ReportXlsxExporter
 
     private function filename(array $filters): string
     {
-        $sede = preg_replace('/[^A-Za-z0-9_-]+/', '_', $filters['sede']);
+        $sede = $filters['sede']
+            ? preg_replace('/[^A-Za-z0-9_-]+/', '_', $filters['sede'])
+            : 'TODAS_SEDES';
 
         return 'REPORTE_PEDIDOS_'.$sede.'_'.str_replace('-', '', $filters['fecha_inicio']).'_'.str_replace('-', '', $filters['fecha_fin']);
     }

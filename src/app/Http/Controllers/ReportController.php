@@ -15,9 +15,9 @@ class ReportController extends Controller
 {
     public function index(Request $request, SedeCatalog $sedes)
     {
-        $filters = $this->validatedFilters($request);
+        $filters = $this->validatedFilters($request, requireDates: $request->query->count() > 0);
 
-        $hasRequiredFilters = $filters['fecha_inicio'] && $filters['fecha_fin'] && $filters['sede'];
+        $hasRequiredFilters = $filters['fecha_inicio'] && $filters['fecha_fin'];
 
         return Inertia::render('Reports/Index', [
             'filters' => $filters,
@@ -33,7 +33,7 @@ class ReportController extends Controller
 
     public function exportXlsx(Request $request, ReportXlsxExporter $exporter)
     {
-        $filters = $this->validatedFilters($request, requireBaseFilters: true);
+        $filters = $this->validatedFilters($request, requireDates: true);
 
         return $exporter->export(
             $this->buildOrdersReport($filters),
@@ -44,7 +44,7 @@ class ReportController extends Controller
 
     public function exportPdf(Request $request, ReportPdfExporter $exporter)
     {
-        $filters = $this->validatedFilters($request, requireBaseFilters: true);
+        $filters = $this->validatedFilters($request, requireDates: true);
 
         return $exporter->export(
             $this->buildOrdersReport($filters),
@@ -53,14 +53,14 @@ class ReportController extends Controller
         );
     }
 
-    private function validatedFilters(Request $request, bool $requireBaseFilters = false): array
+    private function validatedFilters(Request $request, bool $requireDates = false): array
     {
-        $required = $requireBaseFilters ? 'required' : 'nullable';
+        $dateRule = $requireDates ? 'required' : 'nullable';
 
         $validated = $request->validate([
-            'fecha_inicio' => [$required, 'date'],
-            'fecha_fin' => [$required, 'date', 'after_or_equal:fecha_inicio'],
-            'sede' => [$required, 'string', 'max:100'],
+            'fecha_inicio' => [$dateRule, 'date'],
+            'fecha_fin' => [$dateRule, 'date', 'after_or_equal:fecha_inicio'],
+            'sede' => ['nullable', 'string', 'max:100'],
             'category_id' => ['nullable', 'integer', 'exists:categories,id'],
             'item_ids' => ['nullable', 'array'],
             'item_ids.*' => ['integer', 'exists:items,id'],
@@ -100,7 +100,7 @@ class ReportController extends Controller
         return [
             'fecha_inicio' => $filters['fecha_inicio'],
             'fecha_fin' => $filters['fecha_fin'],
-            'sede' => $filters['sede'],
+            'sede' => $filters['sede'] ?: 'Todas las sedes',
             'category_name' => $categoryName ?: 'Todos los grupos',
             'items_summary' => $itemNames ? implode(', ', $itemNames) : 'Todos los productos',
         ];
@@ -111,8 +111,11 @@ class ReportController extends Controller
         $lines = OrderItem::query()
             ->with(['order.user:id,name', 'item.category:id,nombre,aplica_iva'])
             ->whereHas('order', function ($query) use ($filters) {
-                $query->whereBetween('fecha', [$filters['fecha_inicio'], $filters['fecha_fin']])
-                    ->where('sede', $filters['sede']);
+                $query->whereBetween('fecha', [$filters['fecha_inicio'], $filters['fecha_fin']]);
+
+                if ($filters['sede']) {
+                    $query->where('sede', $filters['sede']);
+                }
             })
             ->when($filters['category_id'], function ($query, $categoryId) {
                 $query->whereHas('item', fn ($itemQuery) => $itemQuery->where('categoria_id', $categoryId));

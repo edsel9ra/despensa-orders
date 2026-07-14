@@ -34,13 +34,13 @@ function formatDate(value) {
 </script>
 
 <template>
-    <Head :title="`Pedido #${order.remision}`" />
+    <Head :title="`Pedido ${order.sede}`" />
 
     <AuthenticatedLayout>
         <template #header>
             <div class="flex items-center justify-between">
                 <div>
-                    <h2 class="text-xl font-semibold text-gray-800">Pedido #{{ order.remision }}</h2>
+                    <h2 class="text-xl font-semibold text-gray-800">Pedido {{ order.sede }}</h2>
                     <p class="mt-1 text-sm text-gray-500">Generado el {{ formatDate(order.fecha) }}</p>
                 </div>
                 <div class="flex gap-2 no-print">
@@ -65,12 +65,12 @@ function formatDate(value) {
             <div class="card p-5">
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-4">
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Remisión</p>
-                        <p class="mt-1 text-base font-medium text-gray-900">#{{ order.remision }}</p>
-                    </div>
-                    <div>
                         <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Sede</p>
                         <p class="mt-1 text-base font-medium text-gray-900">{{ order.sede }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Remisión</p>
+                        <p class="mt-1 text-base font-medium text-gray-900">#{{ order.remision }}</p>
                     </div>
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Fecha</p>
@@ -138,7 +138,7 @@ function formatDate(value) {
             </div>
 
             <div class="no-print">
-                <Link :href="route('dashboard')" class="btn-ghost">&larr; Volver al Dashboard</Link>
+                <Link :href="route('orders.index')" class="btn-ghost">&larr; Volver a pedidos</Link>
             </div>
         </div>
     </AuthenticatedLayout>

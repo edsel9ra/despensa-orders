@@ -87,6 +87,11 @@ function formatPrice(value) {
                             <p class="text-2xl font-bold text-stone-900">{{ stats.orders_count }}</p>
                         </div>
                     </div>
+                    <div class="mt-4">
+                        <Link :href="route('orders.index')" class="text-sm font-medium text-brand-600 hover:text-brand-800 transition-colors">
+                            Ver todos →
+                        </Link>
+                    </div>
                 </div>
             </div>
 

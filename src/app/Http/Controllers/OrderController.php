@@ -10,10 +10,37 @@ use App\Services\OrderGenerator;
 use App\Services\PdfExporter;
 use App\Services\SedeCatalog;
 use App\Services\XlsxExporter;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class OrderController extends Controller
 {
+    public function index(Request $request)
+    {
+        $orders = Order::query()
+            ->with('user:id,name')
+            ->withCount('orderItems')
+            ->latest('fecha')
+            ->latest('id')
+            ->paginate(15)
+            ->through(fn (Order $order) => [
+                'id' => $order->id,
+                'remision' => $order->remision,
+                'sede' => $order->sede,
+                'fecha' => $order->fecha->format('d/m/Y'),
+                'user_name' => $order->user?->name ?? 'Sin registrar',
+                'items_count' => $order->order_items_count,
+                'subtotal' => $order->subtotal,
+                'iva' => $order->iva,
+                'total' => $order->total,
+            ]);
+
+        return Inertia::render('Orders/Index', [
+            'orders' => $orders,
+            'canDeleteOrders' => $request->user()?->id !== 3,
+        ]);
+    }
+
     public function create(SedeCatalog $sedes)
     {
         return Inertia::render('Orders/Create', [
@@ -77,5 +104,14 @@ class OrderController extends Controller
     public function exportPdf(Order $order, PdfExporter $exporter)
     {
         return $exporter->export($order);
+    }
+
+    public function destroy(Request $request, Order $order)
+    {
+        abort_if($request->user()?->id === 3, 403);
+
+        $order->delete();
+
+        return redirect()->route('orders.index')->with('success', 'Pedido eliminado exitosamente.');
     }
 }

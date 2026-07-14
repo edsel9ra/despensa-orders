@@ -65,7 +65,7 @@
     <table>
         <thead>
             <tr>
-                <th>Remision</th>
+                <th>Sede</th>
                 <th>Fecha</th>
                 <th>Realizado por</th>
                 <th class="right">Productos</th>
@@ -78,7 +78,7 @@
         <tbody>
             @forelse($report['orders'] as $order)
                 <tr>
-                    <td>{{ $order['remision'] }}</td>
+                    <td>{{ $order['sede'] }}</td>
                     <td>{{ $order['fecha'] }}</td>
                     <td>{{ $order['user_name'] }}</td>
                     <td class="right">{{ $order['items_count'] }}</td>

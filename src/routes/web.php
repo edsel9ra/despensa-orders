@@ -62,12 +62,14 @@ Route::middleware('auth')->group(function () {
         Route::resource('items', ItemController::class);
     });
 
+    Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('orders/create', [OrderController::class, 'create'])->name('orders.create');
     Route::post('orders/preview', [OrderController::class, 'preview'])->name('orders.preview');
     Route::post('orders', [OrderController::class, 'store'])->name('orders.store');
     Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
     Route::get('orders/{order}/xlsx', [OrderController::class, 'exportXlsx'])->name('orders.export-xlsx');
     Route::get('orders/{order}/pdf', [OrderController::class, 'exportPdf'])->name('orders.export-pdf');
+    Route::delete('orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
 });
 
 require __DIR__.'/auth.php';

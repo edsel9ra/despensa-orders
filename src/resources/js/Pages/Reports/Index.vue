@@ -41,19 +41,24 @@ const filteredItems = computed(() => {
 });
 
 const filterDescription = computed(() => {
-    if (!props.report) return 'Selecciona una sede y un rango de fechas para calcular el reporte.';
+    if (!props.report) return 'Selecciona un rango de fechas para calcular el reporte.';
     if (selectedItems.value.length) return `${selectedItems.value.length} producto(s) seleccionado(s)`;
 
     const category = props.categories.find(cat => String(cat.id) === String(form.category_id));
-    return category ? `Grupo: ${category.nombre}` : 'Todos los productos de la sede';
+    if (category) return `Grupo: ${category.nombre}`;
+
+    return props.filters.sede ? 'Todos los productos de la sede' : 'Todos los productos de todas las sedes';
 });
 
 const exportParams = computed(() => {
     const params = {
         fecha_inicio: props.filters.fecha_inicio,
         fecha_fin: props.filters.fecha_fin,
-        sede: props.filters.sede,
     };
+
+    if (props.filters.sede) {
+        params.sede = props.filters.sede;
+    }
 
     if (props.filters.category_id) {
         params.category_id = props.filters.category_id;
@@ -126,9 +131,9 @@ function formatNumber(value) {
                         <p v-if="form.errors.fecha_fin" class="mt-1 text-sm text-rose-600">{{ form.errors.fecha_fin }}</p>
                     </div>
                     <div>
-                        <label class="label-field" for="sede">Sede</label>
-                        <select id="sede" v-model="form.sede" class="select-field" required>
-                            <option value="">Selecciona una sede</option>
+                        <label class="label-field" for="sede">Sede <span class="font-normal text-stone-400">(opcional)</span></label>
+                        <select id="sede" v-model="form.sede" class="select-field">
+                            <option value="">Todas las sedes</option>
                             <option v-for="sede in sedes" :key="sede" :value="sede">{{ sede }}</option>
                         </select>
                         <p v-if="form.errors.sede" class="mt-1 text-sm text-rose-600">{{ form.errors.sede }}</p>
@@ -242,7 +247,7 @@ function formatNumber(value) {
                         <table class="min-w-full divide-y divide-stone-100">
                             <thead>
                                 <tr class="bg-stone-50/80">
-                                    <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500">Remisión</th>
+                                    <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500">Sede</th>
                                     <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500">Fecha</th>
                                     <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500">Realizado por</th>
                                     <th class="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider text-stone-500">Productos</th>
@@ -253,7 +258,7 @@ function formatNumber(value) {
                             </thead>
                             <tbody class="divide-y divide-stone-100">
                                 <tr v-for="order in report.orders" :key="order.id" class="hover:bg-stone-50/70">
-                                    <td class="whitespace-nowrap px-5 py-4 text-sm font-semibold text-stone-900">#{{ order.remision }}</td>
+                                    <td class="whitespace-nowrap px-5 py-4 text-sm font-semibold text-stone-900">{{ order.sede }}</td>
                                     <td class="whitespace-nowrap px-5 py-4 text-sm text-stone-600">{{ order.fecha }}</td>
                                     <td class="whitespace-nowrap px-5 py-4 text-sm text-stone-600">{{ order.user_name }}</td>
                                     <td class="whitespace-nowrap px-5 py-4 text-right text-sm text-stone-600">{{ order.items_count }}</td>
@@ -313,7 +318,7 @@ function formatNumber(value) {
                     </svg>
                 </div>
                 <h3 class="mt-4 text-base font-semibold text-stone-900">Genera un reporte de pedidos</h3>
-                <p class="mx-auto mt-2 max-w-md text-sm text-stone-500">Elige fecha inicio, fecha fin y sede. Luego puedes limitar el cálculo a un grupo o a productos específicos.</p>
+                <p class="mx-auto mt-2 max-w-md text-sm text-stone-500">Elige fecha inicio y fecha fin. La sede, el grupo y los productos específicos son filtros opcionales.</p>
             </div>
         </div>
     </AuthenticatedLayout>
