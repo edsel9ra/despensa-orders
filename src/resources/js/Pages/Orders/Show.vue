@@ -25,10 +25,10 @@ function formatPrice(value) {
 
 function formatDate(value) {
     if (!value) return '';
-    const d = new Date(value);
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
+    // Permite valores como "2026-07-16" o "2026-07-16T00:00:00.000000Z"
+    const datePart = String(value).split('T')[0];
+    const [year, month, day] = datePart.split('-');
+    if (!year || !month || !day) return value;
     return `${day}/${month}/${year}`;
 }
 </script>
