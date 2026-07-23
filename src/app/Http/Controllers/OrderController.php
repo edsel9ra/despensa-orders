@@ -10,7 +10,9 @@ use App\Services\OrderGenerator;
 use App\Services\PdfExporter;
 use App\Services\SedeCatalog;
 use App\Services\XlsxExporter;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class OrderController extends Controller
@@ -53,6 +55,9 @@ class OrderController extends Controller
         $parsed = $parser->parse($request->file('archivo'));
         $sedeResolution = $sedes->resolveForParsedItems($parsed, $request->sede);
         $parsed = $sedeResolution['parsed_items'];
+
+        $this->ensureUniqueRemisionForSede($request->remision, $sedeResolution['sede']);
+
         $orderData = $generator->generate($parsed);
 
         return Inertia::render('Orders/Preview', [
@@ -71,6 +76,8 @@ class OrderController extends Controller
         $sedeResolution = $sedes->resolveForParsedItems($parsed, $request->sede);
         $parsed = $sedeResolution['parsed_items'];
 
+        $this->ensureUniqueRemisionForSede($request->remision, $sedeResolution['sede']);
+
         if ($request->filled('manual_items')) {
             foreach ($request->manual_items as $manual) {
                 $parsed->push([
@@ -80,11 +87,19 @@ class OrderController extends Controller
             }
         }
 
-        $order = $generator->store($parsed, [
-            ...$request->only(['remision', 'sede', 'fecha']),
-            'sede' => $sedeResolution['sede'],
-            'user_id' => $request->user()->id,
-        ]);
+        try {
+            $order = $generator->store($parsed, [
+                ...$request->only(['remision', 'sede', 'fecha']),
+                'sede' => $sedeResolution['sede'],
+                'user_id' => $request->user()->id,
+            ]);
+        } catch (QueryException $exception) {
+            if ($this->isDuplicateRemisionForSedeException($exception)) {
+                $this->throwDuplicateRemisionForSedeValidation($request->remision, $sedeResolution['sede']);
+            }
+
+            throw $exception;
+        }
 
         return redirect()->route('orders.show', $order)->with('success', 'Pedido creado exitosamente.');
     }
@@ -113,5 +128,33 @@ class OrderController extends Controller
         $order->delete();
 
         return redirect()->route('orders.index')->with('success', 'Pedido eliminado exitosamente.');
+    }
+
+    private function ensureUniqueRemisionForSede(string $remision, string $sede): void
+    {
+        $exists = Order::query()
+            ->where('remision', $remision)
+            ->where('sede', $sede)
+            ->exists();
+
+        if ($exists) {
+            $this->throwDuplicateRemisionForSedeValidation($remision, $sede);
+        }
+    }
+
+    private function throwDuplicateRemisionForSedeValidation(string $remision, string $sede): never
+    {
+        throw ValidationException::withMessages([
+            'remision' => "Ya existe una orden de compra con la remisión {$remision} para la sede {$sede}. Revisa la orden existente antes de crear una nueva.",
+        ]);
+    }
+
+    private function isDuplicateRemisionForSedeException(QueryException $exception): bool
+    {
+        $message = $exception->getMessage();
+
+        return (string) $exception->getCode() === '23000'
+            && (str_contains($message, 'orders_remision_sede_unique')
+                || str_contains($message, 'orders.remision'));
     }
 }

@@ -1,10 +1,19 @@
 <?php
+
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
 class GenerateOrderRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'remision' => is_string($this->remision) ? trim($this->remision) : $this->remision,
+            'sede' => is_string($this->sede) ? trim($this->sede) : $this->sede,
+        ]);
+    }
+
     public function authorize(): bool
     {
         return true;

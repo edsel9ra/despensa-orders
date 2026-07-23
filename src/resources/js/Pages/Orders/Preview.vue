@@ -281,6 +281,10 @@ const confirmOrder = () => {
 
             <!-- Confirm actions -->
             <form @submit.prevent="confirmOrder" class="card p-5 space-y-4">
+                <div v-if="form.errors.remision || form.errors.sede" class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+                    <p v-if="form.errors.remision">{{ form.errors.remision }}</p>
+                    <p v-if="form.errors.sede">{{ form.errors.sede }}</p>
+                </div>
                 <div>
                     <label class="label-field">Selecciona nuevamente el archivo para confirmar</label>
                     <input
